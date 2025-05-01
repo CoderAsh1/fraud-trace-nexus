@@ -5,7 +5,9 @@ interface Node {
   id: string;
   label: string;
   amount: number;
-  risk: 'low' | 'medium' | 'high';
+  risk: 'low' | 'medium' | 'high' | 'critical';
+  bank?: string;
+  accountType?: string;
 }
 
 interface Edge {
@@ -21,13 +23,13 @@ interface GraphData {
 
 const sampleData: GraphData = {
   nodes: [
-    { id: 'source', label: 'Source Account', amount: 50000, risk: 'low' },
-    { id: 'node1', label: 'Account 1', amount: 20000, risk: 'medium' },
-    { id: 'node2', label: 'Account 2', amount: 15000, risk: 'low' },
-    { id: 'node3', label: 'Account 3', amount: 15000, risk: 'high' },
-    { id: 'node4', label: 'Account 4', amount: 10000, risk: 'medium' },
-    { id: 'node5', label: 'Account 5', amount: 5000, risk: 'high' },
-    { id: 'node6', label: 'Account 6', amount: 5000, risk: 'high' },
+    { id: 'source', label: 'Source Account', amount: 50000, risk: 'low', bank: 'HDFC Bank', accountType: 'Personal' },
+    { id: 'node1', label: 'Account 1', amount: 20000, risk: 'medium', bank: 'ICICI Bank', accountType: 'Personal' },
+    { id: 'node2', label: 'Account 2', amount: 15000, risk: 'low', bank: 'State Bank of India', accountType: 'Business' },
+    { id: 'node3', label: 'Account 3', amount: 15000, risk: 'high', bank: 'Axis Bank', accountType: 'Personal' },
+    { id: 'node4', label: 'Account 4', amount: 10000, risk: 'medium', bank: 'PNB', accountType: 'Merchant' },
+    { id: 'node5', label: 'Account 5', amount: 5000, risk: 'high', bank: 'Canara Bank', accountType: 'Personal' },
+    { id: 'node6', label: 'Account 6', amount: 5000, risk: 'critical', bank: 'Union Bank', accountType: 'Cash Withdrawal' },
   ],
   edges: [
     { from: 'source', to: 'node1', amount: 20000 },
@@ -67,6 +69,8 @@ export default function TransactionGraph() {
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
+      case 'critical':
+        return 'fill-red-700 dark:fill-red-600';
       case 'high':
         return 'fill-red-500 dark:fill-red-400';
       case 'medium':
@@ -105,6 +109,18 @@ export default function TransactionGraph() {
               
               return (
                 <g key={`${edge.from}-${edge.to}`}>
+                  <defs>
+                    <marker
+                      id={`arrowhead-${edge.from}-${edge.to}`}
+                      markerWidth="10"
+                      markerHeight="7"
+                      refX="9"
+                      refY="3.5"
+                      orient="auto"
+                    >
+                      <polygon points="0 0, 10 3.5, 0 7" className="fill-current text-muted-foreground" />
+                    </marker>
+                  </defs>
                   <line
                     x1={source.x}
                     y1={source.y}
@@ -114,6 +130,7 @@ export default function TransactionGraph() {
                     strokeWidth="2"
                     strokeOpacity="0.5"
                     className="edge-enter"
+                    markerEnd={`url(#arrowhead-${edge.from}-${edge.to})`}
                   />
                   <text
                     x={(source.x + target.x) / 2}
@@ -132,6 +149,8 @@ export default function TransactionGraph() {
             {/* Draw nodes */}
             {sampleData.nodes.filter(node => visibleNodes.includes(node.id)).map((node) => {
               const pos = nodePositions[node.id];
+              const nodeData = sampleData.nodes.find(n => n.id === node.id);
+              
               return (
                 <g 
                   key={node.id}
@@ -141,16 +160,24 @@ export default function TransactionGraph() {
                 >
                   <circle
                     r={node.id === 'source' ? 25 : 20}
-                    className={`${getRiskColor(node.risk)} stroke-2 stroke-white dark:stroke-gray-800`}
+                    className={`${getRiskColor(node.risk)} stroke-2 stroke-white dark:stroke-gray-800 shadow-lg transition-all`}
                   />
                   <text
                     textAnchor="middle"
-                    y="3"
+                    y="0"
                     fontSize="10"
                     fill="white"
                     fontWeight="bold"
                   >
                     {node.id === 'source' ? 'SRC' : node.id.replace('node', '')}
+                  </text>
+                  <text
+                    textAnchor="middle"
+                    y="10"
+                    fontSize="8"
+                    fill="white"
+                  >
+                    {nodeData?.bank?.split(' ')[0] || ''}
                   </text>
                 </g>
               );
@@ -162,13 +189,26 @@ export default function TransactionGraph() {
           <div className="mb-4">
             <h3 className="text-lg font-display font-semibold">Node Details</h3>
             {selectedNode ? (
-              <div className="mt-3">
+              <div className="mt-3 space-y-2">
                 <p className="font-medium">{selectedNode.label}</p>
-                <p className="text-sm text-foreground/70">Amount: ₹{selectedNode.amount.toLocaleString()}</p>
+                <div className="flex justify-between">
+                  <span className="text-sm text-foreground/70">Bank:</span>
+                  <span className="text-sm font-medium">{selectedNode.bank}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-foreground/70">Amount:</span>
+                  <span className="text-sm font-medium">₹{selectedNode.amount.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-foreground/70">Account Type:</span>
+                  <span className="text-sm font-medium">{selectedNode.accountType}</span>
+                </div>
                 <div className="flex items-center mt-1">
                   <span className="text-sm mr-2">Risk:</span>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                    selectedNode.risk === 'high' 
+                    selectedNode.risk === 'critical' 
+                      ? 'bg-red-700/20 text-red-700 dark:bg-red-700/30 dark:text-red-400'
+                      : selectedNode.risk === 'high' 
                       ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                       : selectedNode.risk === 'medium'
                       ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
@@ -199,6 +239,10 @@ export default function TransactionGraph() {
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
                 <span className="text-sm">High Risk</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full bg-red-700 mr-2"></div>
+                <span className="text-sm">Critical Risk</span>
               </div>
             </div>
           </div>
