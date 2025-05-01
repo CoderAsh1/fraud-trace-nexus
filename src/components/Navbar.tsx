@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Navbar() {
@@ -60,6 +60,12 @@ export default function Navbar() {
               </Link>
             ))}
             <ThemeToggle />
+            <Button variant="outline" asChild className="border-primary text-primary hover:bg-primary/10">
+              <Link to="/login">
+                <LogIn className="mr-2 h-4 w-4" />
+                Log In
+              </Link>
+            </Button>
             <Button asChild className="bg-primary text-white hover:bg-primary/90">
               <Link to="/contact">Request a Demo</Link>
             </Button>
@@ -97,7 +103,13 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
-            <div className="mt-4 px-3">
+            <div className="flex flex-col gap-2 mt-4 px-3">
+              <Button variant="outline" asChild className="border-primary text-primary w-full">
+                <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Log In
+                </Link>
+              </Button>
               <Button asChild className="w-full">
                 <Link to="/contact" onClick={() => setIsMenuOpen(false)}>Request a Demo</Link>
               </Button>

@@ -17,6 +17,10 @@ import Contact from "./pages/Contact";
 import Blog from "./pages/Blog";
 import Faq from "./pages/Faq";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import TransactionSearch from "./pages/TransactionSearch";
+import TransactionLoading from "./pages/TransactionLoading";
+import TransactionResults from "./pages/TransactionResults";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +44,10 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/faq" element={<Faq />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/transaction-search" element={<TransactionSearch />} />
+              <Route path="/transaction-loading" element={<TransactionLoading />} />
+              <Route path="/transaction-results" element={<TransactionResults />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
